@@ -1,0 +1,14 @@
+{
+  "name": "solenoid-tapper",
+  "version": "1.0.0",
+  "description": "Drive a solenoid with johnny-five",
+  "main": "demo.js",
+  "scripts": {
+    "start": "node demo.js"
+  },
+  "author": "Jason R. Huggins",
+  "license": "MIT",
+  "dependencies": {
+    "johnny-five": "*"
+  }
+}
