@@ -1,1 +1,1 @@
-# solenoid
+# Sidekick Controller Server

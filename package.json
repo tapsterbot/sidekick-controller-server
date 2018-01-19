@@ -1,10 +1,10 @@
 {
-  "name": "solenoid-tapper",
-  "version": "1.0.0",
-  "description": "Drive a solenoid with johnny-five",
-  "main": "demo.js",
+  "name": "sidekick-controller-server",
+  "version": "1.5.0",
+  "description": "Controller Server for Tapster Sidekick robot",
+  "main": "tap.js",
   "scripts": {
-    "start": "node demo.js"
+    "start": "node tap.js"
   },
   "author": "Jason R. Huggins",
   "license": "MIT",
