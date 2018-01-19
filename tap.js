@@ -1,11 +1,12 @@
 var five = require('johnny-five')
+var TAU = Math.PI * 2
+
 var tap = new five.Board()
-var ccintersect = require('./circle-circle-intersect')
-var Tapper = require('./tapper')
-var zAxis = require('./z-axis')
 var Arm = require('./arm')
 var Home = require('./home')
-var TAU = Math.PI * 2
+var Position = require('./position')
+var Tapper = require('./tapper')
+var zAxis = require('./z-axis')
 
 tap.on('ready', function() {
   this.name = this.io.firmware.name.split('.')[0]
@@ -44,6 +45,8 @@ tap.on('ready', function() {
 
   var home = new Home({a:a, b:b, z:z})
 
+  var position = new Position({a:a, b:b})
+
   // Solenoid End Effector
   var tapper = new Tapper(17, 18)   // On Arduino, pin A3 = 17, A4 = 18
 
@@ -54,7 +57,8 @@ tap.on('ready', function() {
     z: z,
     e: tapper,
     enablePin: enablePin,
-    home: home
+    home: home,
+    position: position
   }
 
   this.repl.cmd.ignoreUndefined = true
