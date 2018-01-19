@@ -1,28 +1,40 @@
-exports.Tapper = function (solenoidPin) {
-  this.solenoid = solenoidPin
+var five = require('johnny-five')
+
+module.exports.Tapper = function (dirPin, solenoidPin) {
+  // CNC Shield - 4th Axis (A) direction pin
+  this.dir = new five.Pin({pin: dirPin, type: 'digital', mode: 1})
+  this.dir.high()
+
+  // CNC Shield - 4th Axis (A) "step" pin
+  this.solenoid = new five.Pin({pin: solenoidPin, type: 'digital', mode: 1})
+
   this.tapDelay = 45
   this.intervalDelay = 90
   this.ringDelay = 2000
-  this._interval = null  
-  this._started = false  
+  this._interval = null
+  this._started = false
+
+
+  this.toggle = function () {
+    this.solenoid.low()
+    this.solenoid.high()
+    this.solenoid.low()
+    this.solenoid.high()
+  }
+
 
   this.tap = function () {
-    this.solenoid.low()
-    this.solenoid.high() 
-    this.solenoid.low()
-    this.solenoid.high()  
+    this.toggle()
 
     setTimeout(
       function (_this) {
-        _this.solenoid.low() 
-        _this.solenoid.high()
-        _this.solenoid.low()
-        _this.solenoid.high()
-      }, 
-      this.tapDelay, 
+        _this.toggle()
+      },
+      this.tapDelay,
       this
     )
   }
+
 
   this.start = function () {
     if (this._started === false) {
@@ -31,10 +43,12 @@ exports.Tapper = function (solenoidPin) {
     }
   }
 
+
   this.stop = function () {
     clearInterval(this._interval)
     this._started = false
   }
+
 
   this.ring = function (times = 1) {
     var delay = this.ringDelay
@@ -45,5 +59,6 @@ exports.Tapper = function (solenoidPin) {
       }
     }
   }
+
 
 }

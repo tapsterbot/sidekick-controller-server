@@ -1,106 +1,70 @@
 var five = require('johnny-five')
-var board = new five.Board()
+var tap = new five.Board()
+var ccintersect = require('./circle-circle-intersect')
 var Tapper = require('./tapper-2').Tapper
+var zAxis = require('./z-axis')
+var Arm = require('./arm')
+var Home = require('./home')
+var TAU = Math.PI * 2
 
-board.on('ready', function() {  
+tap.on('ready', function() {
+  this.name = this.io.firmware.name.split('.')[0]
 
-  var xArm = new five.Stepper({
-      type: five.Stepper.TYPE.DRIVER,
-      stepsPerRev: 3200,
-      pins: {
-        step: 2,
-        dir: 5
-      }
+  var enablePin = new five.Pin({pin: 8, type: 'digital', mode: 1})
+
+  var a = new Arm({
+    stepPin: 2,
+    dirPin: 5,
+    limitPin: 9,
+    label: "A",
+    homeDirection: 1,
+    theta_home: 240,
+    theta_max: 30,
+    x0: -24,
+    y0: 0,
+    r0: 8*9,
+    r1: 8*13
   })
-  
-  var yArm = new five.Stepper({
-      type: five.Stepper.TYPE.DRIVER,
-      stepsPerRev: 3200,
-      pins: {
-        step: 3,
-        dir: 6
-      }
-  })  
-  
-  var zArm = function () {
-    this.stepPin = new five.Pin({pin: 4, type: 'digital', mode: 1})
-    this.dir = new five.Pin({pin: 7, type: 'digital', mode: 1})
 
-    // Set inital direction
-    this.dir.low() // Go up by default
+  var b = new Arm({
+    stepPin: 3,
+    dirPin: 6,
+    limitPin: 10,
+    label: "B",
+    homeDirection: 0,
+    theta_home: -60,
+    theta_max: 150,
+    x0: 24,
+    y0: 0,
+    r0: 8*9,
+    r1: 8*13
+  })
 
-    this.step = function(numSteps = 1) {
-      if (numSteps >= 0) {
-        this.dir.low()
-      } else {
-        this.dir.high()
-      }
-      for (var i = 0; i < Math.abs(numSteps); i++) {
-        this.stepPin.low()
-        this.stepPin.high()
-      }
-    }
+  var z = new zAxis()
 
-  }
-  z = new zArm()
-  
-  var dirPin = new five.Pin({pin: 17, type: 'digital', mode: 1})
-  dirPin.high()
-  var stepPin = new five.Pin({pin: 18, type: 'digital', mode: 1})
-  
-  var toggle = function() {
-    stepPin.low()
-    stepPin.high()
-    stepPin.low()
-    stepPin.high()
+  var home = new Home({a:a, b:b, z:z})
+
+  // Solenoid End Effector
+  var tapper = new Tapper(17, 18)   // On Arduino, pin A3 = 17, A4 = 18
+
+  var t0 = {
+    name: this.name,
+    a: a,
+    b: b,
+    z: z,
+    e: tapper,
+    enablePin: enablePin,
+    home: home
   }
 
-  var delay = 50
-  var tap = function () {
-    toggle()
-    setTimeout(
-      function () {
-        toggle()
-      }, delay)
-  }
-  
-  var tapper = new Tapper(stepPin)
-  
-  var moveOut = function(numSteps = 100) {
-    if (numSteps > 0) {
-      xArm.rpm(15).ccw().step(numSteps, ()=>{})
-      yArm.rpm(15).cw().step(numSteps, ()=>{})
-    }
-  }
-
-  var moveIn = function(numSteps = 100) {
-    if (numSteps > 0) {
-      xArm.rpm(15).cw().step(numSteps, ()=>{})
-      yArm.rpm(15).ccw().step(numSteps, ()=>{})
-    }
-  }  
-  
-  
   this.repl.cmd.ignoreUndefined = true
   this.repl.inject({
       five: five,
-      board: board,
-      dirPin: dirPin,
-      stepPin: stepPin,
-      toggle: toggle,
-      tap: tap,
-      moveIn: moveIn,
-      moveOut: moveOut,
-      x: xArm,
-      y: yArm,      
-      z: z,
-      tapper: tapper        
+      tap: this,
+      t0: t0
   })
 
-  console.log('Ready!')
+  console.log(this.name + ' Ready!')
+  setTimeout(function() { t0.home.homeABZ() }, 500)
+
 })
-
-
-// var enablePin = new five.Pin({pin: 8, type: 'digital', mode: 1})
-
-
