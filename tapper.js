@@ -1,6 +1,6 @@
 var five = require('johnny-five')
 
-module.exports.Tapper = function (dirPin, solenoidPin) {
+var Tapper = function (dirPin, solenoidPin) {
   // CNC Shield - 4th Axis (A) direction pin
   this.dir = new five.Pin({pin: dirPin, type: 'digital', mode: 1})
   this.dir.high()
@@ -59,6 +59,8 @@ module.exports.Tapper = function (dirPin, solenoidPin) {
       }
     }
   }
-
-
+  
+  
 }
+
+module.exports = Tapper

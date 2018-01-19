@@ -1,7 +1,7 @@
 var five = require('johnny-five')
 var tap = new five.Board()
 var ccintersect = require('./circle-circle-intersect')
-var Tapper = require('./tapper-2').Tapper
+var Tapper = require('./tapper')
 var zAxis = require('./z-axis')
 var Arm = require('./arm')
 var Home = require('./home')

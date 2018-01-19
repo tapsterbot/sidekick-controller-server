@@ -1,4 +1,4 @@
-function Home(opts){
+var Home = function(opts) {
   this.a = opts.a
   this.b = opts.b
   this.z = opts.z

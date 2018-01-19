@@ -1,6 +1,6 @@
 var five = require('johnny-five')
 
-var zAxis = function () {
+var zAxis = function() {
   this.position = {step: null}
   this.stepPin = new five.Pin({pin: 4, type: 'digital', mode: 1})
   this.dir = new five.Pin({pin: 7, type: 'digital', mode: 1})
