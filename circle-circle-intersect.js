@@ -20,9 +20,9 @@
 
 
 
-var circleCircleIntersection = function(x0, y0, r0, x1, y1, r1) {
-  var a, dx, dy, d, h, rx, ry
-  var x2, y2
+let circleCircleIntersection = function(x0, y0, r0, x1, y1, r1) {
+  let a, dx, dy, d, h, rx, ry
+  let x2, y2
 
   // dx and dy are the vertical and horizontal distances between
   // the circle centers.

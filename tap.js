@@ -1,19 +1,19 @@
-var five = require('johnny-five')
-var TAU = Math.PI * 2
+let five = require('johnny-five')
+let TAU = Math.PI * 2
 
-var tap = new five.Board()
-var Arm = require('./arm')
-var Home = require('./home')
-var Position = require('./position')
-var Tapper = require('./tapper')
-var zAxis = require('./z-axis')
+let tap = new five.Board()
+let Arm = require('./arm')
+let Home = require('./home')
+let Position = require('./position')
+let Tapper = require('./tapper')
+let zAxis = require('./z-axis')
 
-tap.on('ready', function() {
-  this.name = this.io.firmware.name.split('.')[0]
+tap.on('ready', () => {
+  tap.name = tap.io.firmware.name.split('.')[0]
 
-  var enablePin = new five.Pin({pin: 8, type: 'digital', mode: 1})
+  let enablePin = new five.Pin({pin: 8, type: 'digital', mode: 1})
 
-  var a = new Arm({
+  let a = new Arm({
     stepPin: 2,
     dirPin: 5,
     limitPin: 9,
@@ -27,7 +27,7 @@ tap.on('ready', function() {
     r1: 8*13
   })
 
-  var b = new Arm({
+  let b = new Arm({
     stepPin: 3,
     dirPin: 6,
     limitPin: 10,
@@ -41,16 +41,26 @@ tap.on('ready', function() {
     r1: 8*13
   })
 
-  var z = new zAxis()
+  let z = new zAxis()
 
-  var home = new Home({a:a, b:b, z:z})
+  let home = new Home({a:a, b:b, z:z})
 
-  var position = new Position({a:a, b:b})
+  let position = new Position({a:a, b:b})
+
+  a.on('position', data => {
+    //console.log(a.label + ' position update: ' + data.x1 + ', ' + data.y1)
+    position.update()
+  })
+
+  b.on('position', data => {
+    //console.log(b.label + ' position update: ' + data.x1 + ', ' + data.y1)
+    position.update()
+  })
 
   // Solenoid End Effector
-  var tapper = new Tapper(17, 18)   // On Arduino, pin A3 = 17, A4 = 18
+  let tapper = new Tapper(17, 18)   // On Arduino, pin A3 = 17, A4 = 18
 
-  var t0 = {
+  let t0 = {
     name: this.name,
     a: a,
     b: b,
@@ -61,14 +71,10 @@ tap.on('ready', function() {
     position: position
   }
 
-  this.repl.cmd.ignoreUndefined = true
-  this.repl.inject({
-      five: five,
-      tap: this,
-      t0: t0
-  })
+  tap.repl.cmd.ignoreUndefined = true
+  tap.repl.inject({ five, tap, t0 })
 
-  console.log(this.name + ' Ready!')
-  setTimeout(function() { t0.home.homeABZ() }, 500)
+  console.log(tap.name + ' Ready!')
+  setTimeout( () => { t0.home.ZAB() }, 500)
 
 })

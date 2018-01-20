@@ -1,85 +1,83 @@
-var Home = function(opts) {
-  this.a = opts.a
-  this.b = opts.b
-  this.z = opts.z
-}
+class Home {
 
-Home.prototype.homeA = function(callback){
-  var interval = 4
-  if (this.a.limitSwitch.value == 1) {
-    this.a.position.step = 0
+  constructor(opts) {
+    this.a = opts.a
+    this.b = opts.b
+    this.z = opts.z
+  }
 
-    if (typeof(callback) === 'undefined') {
-      return
+  A(callback){
+    let interval = 4
+    if (this.a.limitSwitch.value == 1) {
+      this.a.position.step = 0
+
+      if (typeof(callback) === 'undefined') {
+        return
+      } else {
+        callback()
+      }
+
     } else {
-      callback()
+      this.a.motor.step({steps: 1, direction: this.a.homeDirection, rpm:10}, ()=>{})
+      this.b.motor.step({steps: 1, direction: this.a.homeDirection, rpm:10}, ()=>{})
+      setTimeout(this.A.bind(this), interval, callback)
     }
-
-  } else {
-    this.a.motor.step({steps: 1, direction: this.a.homeDirection, rpm:10}, ()=>{})
-    this.b.motor.step({steps: 1, direction: this.a.homeDirection, rpm:10}, ()=>{})
-    setTimeout(this.homeA.bind(this), interval, callback)
   }
-}
 
+  B(callback) {
+    let interval = 4
+    if (this.b.limitSwitch.value == 1) {
+      this.b.position.step = 0
 
-Home.prototype.homeB = function(callback) {
-  var interval = 4
-  if (this.b.limitSwitch.value == 1) {
-    this.b.position.step = 0
+      if (typeof(callback) === 'undefined') {
+        return
+      } else {
+        callback()
+      }
 
-    if (typeof(callback) === 'undefined') {
-      return
     } else {
-      callback()
+      this.b.motor.step({steps: 1, direction: this.b.homeDirection, rpm:10}, ()=>{})
+      this.a.cw(1, 10)
+      setTimeout(this.B.bind(this), interval, callback)
     }
-
-  } else {
-    this.b.motor.step({steps: 1, direction: this.b.homeDirection, rpm:10}, ()=>{})
-    this.a.cw(1, 10)
-    setTimeout(this.homeB.bind(this), interval, callback)
-  }
-  this.a.updatePosition()
-  this.b.updatePosition()
-}
-
-
-Home.prototype.homeAB = function() {
-  this.homeA(this.homeB.bind(this))
-}
-
-
-Home.prototype.homeABZ = function() {
-  // Attach listeners, so things happen and in the right order...
-  this._bound_bPressedListener = this.bPressedListener.bind(this)
-  this.b.limitSwitch.addListener('press', this._bound_bPressedListener)
-
-  if (this.z.limitSwitch.value == 1) {
-    this.homeAB()
-  } else {
-    this._bound_zPressedListener = this.zPressedListener.bind(this)
-    this.z.limitSwitch.addListener('press', this._bound_zPressedListener)
+    this.a.updatePosition()
+    this.b.updatePosition()
   }
 
-  this.z.home()
-}
+  AB() {
+    this.A(this.B.bind(this))
+  }
+
+  ZAB() {
+    // Attach listeners, so things happen and in the right order...
+    this._bound_bPressedListener = this.bPressedListener.bind(this)
+    this.b.limitSwitch.addListener('press', this._bound_bPressedListener)
+
+    if (this.z.limitSwitch.value == 1) {
+      this.AB()
+    } else {
+      this._bound_zPressedListener = this.zPressedListener.bind(this)
+      this.z.limitSwitch.addListener('press', this._bound_zPressedListener)
+    }
+    this.z.home()
+  }
+
+  zPressedListener() {
+    this.z.limitSwitch.removeListener('press', this._bound_zPressedListener)
+    this.AB()
+  }
 
 
-Home.prototype.zPressedListener = function() {
-  this.z.limitSwitch.removeListener('press', this._bound_zPressedListener)
-  this.homeAB()
-}
+  bPressedListener() {
+    this.b.limitSwitch.removeListener('press', this._bound_bPressedListener)
+    this.rest()
+  }
 
+  rest() {
+    this.b.angle = 10
+    this.a.angle = 170
+  }
 
-Home.prototype.bPressedListener = function() {
-  this.b.limitSwitch.removeListener('press', this._bound_bPressedListener)
-  this.rest()
-}
-
-
-Home.prototype.rest = function() {
-   this.b.move_to(10)
-   this.a.move_to(170)
 }
 
 

@@ -1,29 +1,47 @@
-var five = require('johnny-five')
-var TAU = Math.PI * 2
+let inherits = require('util').inherits
+let EventEmitter = require('events').EventEmitter
+let five = require('johnny-five')
+let TAU = Math.PI * 2
 
-var Arm = function(opts) {
+class Arm {
 
-  this.label = opts.label
-  this.position = {x0: opts.x0, y0: opts.y0, x1: null, y1: null, step: null}
-  this.homeDirection = opts.homeDirection
-  this.stepsPerRev = 3200
-  this.theta_home = opts.theta_home
-  this.theta_max = opts.theta_max
-  this.r0 = opts.r0
-  this.r1 = opts.r1
+  constructor(opts) {
+    this.label = opts.label
+    this.position = {x0: opts.x0, y0: opts.y0, x1: null, y1: null, step: null}
+    this.homeDirection = opts.homeDirection
+    this.stepsPerRev = 3200
+    this.theta_home = opts.theta_home
+    this.theta_max = opts.theta_max
+    this.r0 = opts.r0
+    this.r1 = opts.r1
 
+    this.motor = new five.Stepper({
+      type: five.Stepper.TYPE.DRIVER,
+      stepsPerRev: this.stepsPerRev,
+      pins: {
+        step: opts.stepPin,
+        dir: opts.dirPin
+      }
+    })
 
-  this.motor = new five.Stepper({
-    type: five.Stepper.TYPE.DRIVER,
-    stepsPerRev: this.stepsPerRev,
-    pins: {
-      step: opts.stepPin,
-      dir: opts.dirPin
-    }
-  })
+    this.limitSwitch = new five.Button({
+        pin: opts.limitPin,
+        invert: true
+    })
+    this.limitSwitch.label = opts.label
 
+    this.limitSwitch.on('press', function() {
+        console.log( this.label + ' closed' )
+    }, this)
 
-  this.angle = function() {
+    this.limitSwitch.on('release', function() {
+      console.log( this.label + ' open' )
+    })
+
+    EventEmitter.call(this)
+  }
+
+  get angle() {
     if (this.label == "A") {
       return Math.round((this.theta_home - (this.position.step / this.stepsPerRev * 360)) * 100) / 100
     } else {
@@ -31,14 +49,7 @@ var Arm = function(opts) {
     }
   }
 
-
-  this.updatePosition = function() {
-    this.position.x1 = this.position.x0 + Math.round((Math.cos(TAU * this.angle() / 360) * this.r0) * 100) / 100
-    this.position.y1 = Math.round((Math.sin(TAU * this.angle() / 360) * this.r0) * 100) / 100
-  }
-
-
-  this.move_to = function(theta) {
+  set angle(theta) {
     if (this.position.step == null) { return }
     if (this.label == "A") {
       if ((theta > this.theta_home) || (theta < this.theta_max)) { return }
@@ -46,7 +57,7 @@ var Arm = function(opts) {
       if ((theta < this.theta_home) || (theta > this.theta_max)) { return }
     }
 
-    var steps = Math.round( this.stepsPerRev / 360 * (theta - this.angle()) )
+    let steps = Math.round( this.stepsPerRev / 360 * (theta - this.angle) )
 
     if (steps > 0) {
        this.ccw(steps)
@@ -56,8 +67,15 @@ var Arm = function(opts) {
     }
   }
 
+  updatePosition() {
+    this.position.x1 = this.position.x0 + Math.round((Math.cos(TAU * this.angle / 360) * this.r0) * 100) / 100
+    this.position.y1 = Math.round((Math.sin(TAU * this.angle / 360) * this.r0) * 100) / 100
 
-  this.cw = function(numSteps = 100, rpm = 15) {
+    // Notify listeners
+    this.emit('position', this.position)
+  }
+
+  cw(numSteps = 100, rpm = 15) {
     // Check if valid
     if (this.position.step == null) { return }
     if (typeof(numSteps) !== 'number') { return }
@@ -74,8 +92,7 @@ var Arm = function(opts) {
     this.updatePosition()
   }
 
-
-  this.ccw = function(numSteps = 100, rpm = 15) {
+  ccw(numSteps = 100, rpm = 15) {
     // Check if valid
     if (this.position.step == null) { return }
     if (typeof(numSteps) !== 'number') { return }
@@ -92,23 +109,7 @@ var Arm = function(opts) {
     this.updatePosition()
   }
 
-
-  this.limitSwitch = new five.Button({
-      pin: opts.limitPin,
-      invert: true
-  })
-  this.limitSwitch.label = opts.label
-
-  this.limitSwitch.on('press', function() {
-      console.log( this.label + ' closed' )
-  }, this)
-
-  this.limitSwitch.on('release', function() {
-    console.log( this.label + ' open' )
-  })
-
-
-  this.home = function(interval = 4){
+  home(interval = 4){
     if (this.limitSwitch.value == 1) {
       this.position.step = 0
       this.updatePosition()
@@ -120,5 +121,7 @@ var Arm = function(opts) {
   }
 
 }
+
+inherits(Arm, EventEmitter)
 
 module.exports = Arm
