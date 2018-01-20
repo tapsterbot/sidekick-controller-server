@@ -4,7 +4,7 @@
   "description": "Controller Server for Tapster Sidekick robot",
   "main": "server.js",
   "scripts": {
-    "start": "node tap.js"
+    "start": "node server.js"
   },
   "author": "Jason R. Huggins",
   "license": "MIT",
