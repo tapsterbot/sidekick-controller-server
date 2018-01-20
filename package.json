@@ -2,7 +2,7 @@
   "name": "sidekick-controller-server",
   "version": "1.5.0",
   "description": "Controller Server for Tapster Sidekick robot",
-  "main": "tap.js",
+  "main": "server.js",
   "scripts": {
     "start": "node tap.js"
   },
