@@ -32,7 +32,7 @@ class Arm {
 
     this.limitSwitch.on('press', function() {
         console.log( this.label + ' closed' )
-    }, this)
+    })
 
     this.limitSwitch.on('release', function() {
       console.log( this.label + ' open' )
