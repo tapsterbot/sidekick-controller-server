@@ -42,21 +42,8 @@ tap.on('ready', () => {
   })
 
   let z = new zAxis()
-
   let home = new Home({a:a, b:b, z:z})
-
   let position = new Position({a:a, b:b})
-
-  a.on('position', data => {
-    //console.log(a.label + ' position update: ' + data.x1 + ', ' + data.y1)
-    position.update()
-  })
-
-  b.on('position', data => {
-    //console.log(b.label + ' position update: ' + data.x1 + ', ' + data.y1)
-    position.update()
-  })
-
   // Solenoid End Effector
   let tapper = new Tapper(17, 18)   // On Arduino, pin A3 = 17, A4 = 18
 
@@ -68,8 +55,19 @@ tap.on('ready', () => {
     e: tapper,
     enablePin: enablePin,
     home: home,
-    position: position
+    position: position,
+    go: position.go
   }
+
+  a.on('position', data => {
+    //console.log(a.label + ' position update: ' + data.x1 + ', ' + data.y1)
+    position.update()
+  })
+
+  b.on('position', data => {
+    //console.log(b.label + ' position update: ' + data.x1 + ', ' + data.y1)
+    position.update()
+  })
 
   tap.repl.cmd.ignoreUndefined = true
   tap.repl.inject({ five, tap, t0 })
