@@ -39,6 +39,8 @@ class Arm {
     })
 
     EventEmitter.call(this)
+
+    this.setMaxListeners(100)
   }
 
   get angle() {

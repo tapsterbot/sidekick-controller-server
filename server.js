@@ -44,7 +44,7 @@ tap.on('ready', () => {
   let z = new zAxis()
   let home = new Home({a:a, b:b, z:z})
   let position = new Position({a:a, b:b})
-  // Solenoid End Effector
+  // End Effector (Solenoid)
   let tapper = new Tapper(17, 18)   // On Arduino, pin A3 = 17, A4 = 18
 
   let t0 = {
@@ -56,7 +56,7 @@ tap.on('ready', () => {
     enablePin: enablePin,
     home: home,
     position: position,
-    go: position.go
+    go: position.go.bind(position)
   }
 
   a.on('position', data => {
@@ -74,5 +74,7 @@ tap.on('ready', () => {
 
   console.log(tap.name + ' Ready!')
   setTimeout( () => { t0.home.ZAB() }, 500)
+
+  tap.setMaxListeners(100)
 
 })
